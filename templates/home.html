@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DataBase Example</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    
+    <style>
+        body {
+        background-color:#00ccff;
+        }
+        .imgdiv, img{
+            width: 300px;
+            height: auto;
+            
+        }
+        .txtdiv{
+            width: 300px;
+            height: auto;
+            float:right; 
+            padding: 10px;
+            margin-top: 100px;
+            
+        }
+        
+    </style>
+    <style type="text/css">
+      /* Set the size of the div element that contains the map */
+      #map {
+        height: 400px;
+        /* The height is 400 pixels */
+        width: 100%;
+        /* The width is the width of the web page */
+      };
+
+    </style>
+    <script>
+        // helps to open the info window 
+        function infoCallback(infowindow, marker) {
+            return function() { infowindow.open(map, marker); };
+        }
+      // Initialize and add the map
+      function initMap() {
+        // Using ajax request to get the data from server side to client side //
+        // This data is used to plot markers and info windows on the google maps //
+          $.ajax({
+                type: "POST",
+                url:'/getRecordsFromFirebase',
+                data: JSON.stringify(),
+                dataType: 'json'
+            }).done(function(data) { 
+                //console.log("****************************************************");
+
+                // The location of Uluru (This will focus the map)
+                var uluru = { lat: 32.344, lng: 71.036 };
+                // The map, centered at Uluru
+                const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 4,
+                center: uluru,
+                });
+                // The marker, positioned at Uluru
+
+
+                //console.log(data);
+                for (key in data) {
+                    //console.log("----------------------------------------------------");
+                    //console.log("%c "+key + " = " + data[key],"color:cyan");
+                    //console.log(data[key].mImageTitle)
+                    //console.log(data[key].mlatitude)
+                    //console.log(data[key].mlongitude)
+                    //console.log("----------------------------------------------------");
+
+                    let title = data[key].mImageTitle;
+                    let discription = data[key].mImageDiscription;
+                    let latitude = parseFloat(data[key].mlatitude, 10);
+                    let longitude = parseFloat(data[key].mlongitude, 10);
+                    let imageURL = data[key].imageUrl
+                    uluru = { lat: latitude, lng: longitude};
+                    var marker = new google.maps.Marker({
+                    position: uluru,
+                    map: map,
+                    title: title,
+                    //label: title,
+                    });
+                    infowindow = new google.maps.InfoWindow({
+                    content: "<div><div class=\"imgdiv\"  style='float:left'><img src="+imageURL+"></div><div class=\"txtdiv\"><b>Title: </b>"+title+"<br/><b>Discription: </b>"+discription+"<br/><b>Tree id: </b>"+key+"</div></div>"
+                    });
+                    // Attach it to the marker we've just added
+                    google.maps.event.addListener(marker, 'click', infoCallback(infowindow, marker));     
+                    
+                }
+						
+					});        
+      }           
+    </script>
+</head>
+
+<body>
+    <nav class="navbar navbar-default" style="background-color: #99ebff;">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#"><span class="glyphicon glyphicon-home">Home</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <h3>Your Plantation Record</h3>
+        <!--The div element for the map -->
+        <div id="map"></div>
+        <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+        <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9Wc2-DuICjkBBTQT77HWekCbaHx33enY&callback=initMap&libraries=&v=weekly"
+        async
+        ></script>
+</body>
+
+
+</html>
